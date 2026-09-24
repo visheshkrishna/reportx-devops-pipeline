@@ -47,3 +47,8 @@ class ResizeObserverMock {
 
 (globalThis as typeof globalThis & { ResizeObserver: typeof ResizeObserverMock }).ResizeObserver = ResizeObserverMock;
 
+
+// CI containers run slower than local dev machines. Raise Testing Library's
+// default 1000ms async timeout so waitFor() assertions don't fail on timing alone.
+import { configure } from "@testing-library/dom";
+configure({ asyncUtilTimeout: 5000 });

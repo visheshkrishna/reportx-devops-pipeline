@@ -37,3 +37,11 @@ USER appuser
 EXPOSE 8000
 
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+
+# --- Test stage: same runtime, plus dev deps and tests. Not shipped. ---
+FROM base AS test
+USER root
+COPY tests ./tests
+RUN pip install --no-cache-dir -e ".[dev]"
+ENV PYTHONPATH=/app
+CMD ["pytest", "-q"]

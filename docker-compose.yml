@@ -20,6 +20,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+      target: base
     environment:
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
       ALLOWED_HOSTS: ${ALLOWED_HOSTS:-localhost,127.0.0.1,testserver,backend,frontend}
@@ -47,6 +48,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      target: runner
       args:
         NEXT_PUBLIC_BACKEND_URL: ${NEXT_PUBLIC_BACKEND_URL:-http://localhost:8000}
     environment:

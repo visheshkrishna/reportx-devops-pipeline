@@ -12,8 +12,6 @@ venv
 .gitignore
 .DS_Store
 
-# Tests (not needed for runtime image)
-tests
 
 # Env and logs
 .env
