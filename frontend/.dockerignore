@@ -25,7 +25,3 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
-# Tests
-**/__tests__
-**/*.spec.*
-**/*.test.*

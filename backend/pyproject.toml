@@ -2,14 +2,14 @@
 name = "reportx-backend"
 version = "0.1.0"
 description = "ReportX FastAPI backend"
-requires-python = ">=3.11"
+requires-python = ">=3.11,<3.13"
 authors = [{name = "ReportX", email = "dev@reportx.local"}]
 dependencies = [
   "fastapi>=0.110.0",
   "uvicorn[standard]>=0.29.0",
   "python-multipart>=0.0.9",
   "pydantic>=2.7.0",
-  "sqlalchemy>=2.0.30",
+  "sqlalchemy[asyncio]>=2.0.30",
   "alembic>=1.13.1",
   "asyncpg>=0.29.0",
   "PyJWT>=2.8.0",
@@ -32,6 +32,9 @@ dev = [
   "aiosqlite>=0.21.0",
   "pytest-asyncio>=0.23.8",
 ]
+
+[tool.setuptools]
+packages = ["app"]
 
 [tool.black]
 line-length = 100
