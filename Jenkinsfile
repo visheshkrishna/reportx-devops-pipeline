@@ -66,6 +66,32 @@ pipeline {
         '''
       }
     }
+
+    stage('Security') {
+      steps {
+        sh '''
+          set -e
+          echo "--- Trivy: backend image ---"
+          docker run --rm \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            -v trivy-cache:/root/.cache/ \
+            aquasec/trivy:latest image \
+            --severity HIGH,CRITICAL --scanners vuln --exit-code 0 \
+            ${BACKEND_IMG}:${IMAGE_TAG}
+
+          echo "--- Trivy: frontend image ---"
+          docker run --rm \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            -v trivy-cache:/root/.cache/ \
+            aquasec/trivy:latest image \
+            --severity HIGH,CRITICAL --scanners vuln --exit-code 0 \
+            ${FRONTEND_IMG}:${IMAGE_TAG}
+
+          echo "--- npm audit: frontend dependencies ---"
+          docker run --rm ${FRONTEND_IMG}-test:${IMAGE_TAG} npm audit --audit-level=high || true
+        '''
+      }
+    }
   }
 
   post {
