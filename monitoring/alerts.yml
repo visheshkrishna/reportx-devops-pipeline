@@ -1,0 +1,29 @@
+groups:
+  - name: reportx-availability
+    rules:
+      - alert: ServiceDown
+        expr: probe_success == 0
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: "{{ $labels.service }} ({{ $labels.env }}) is not responding"
+          description: "Health probe to {{ $labels.instance }} has failed for 30s."
+
+      - alert: SlowResponse
+        expr: probe_duration_seconds > 2
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.service }} ({{ $labels.env }}) is slow"
+          description: "Probe taking {{ $value }}s, above the 2s threshold."
+
+      - alert: TLSNotUsed
+        expr: probe_http_ssl == 0
+        for: 5m
+        labels:
+          severity: info
+        annotations:
+          summary: "{{ $labels.instance }} served over plain HTTP"
+          description: "Acceptable for local deployment; must be HTTPS in real production."

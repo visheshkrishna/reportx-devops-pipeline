@@ -153,6 +153,43 @@ pipeline {
         '''
       }
     }
+
+        stage('Monitoring') {
+      steps {
+        sh '''
+          set -e
+          echo "--- Starting monitoring stack (Prometheus :9090, Grafana :3001) ---"
+          docker compose -p reportx-monitoring -f monitoring/docker-compose.monitoring.yml up -d
+
+          echo "--- Waiting for Prometheus ---"
+          for i in $(seq 1 60); do
+            if docker compose -p reportx-monitoring -f monitoring/docker-compose.monitoring.yml \
+                 exec -T prometheus wget -q -O- http://localhost:9090/-/ready >/dev/null 2>&1; then
+              echo "Prometheus ready after ${i}s"
+              break
+            fi
+            if [ "$i" = "60" ]; then echo "Prometheus never became ready"; exit 1; fi
+            sleep 1
+          done
+
+          echo "--- Alert rules loaded ---"
+          docker compose -p reportx-monitoring -f monitoring/docker-compose.monitoring.yml \
+            exec -T prometheus wget -q -O- http://localhost:9090/api/v1/rules \
+            | tr ',' '\\n' | grep '"name"' || true
+
+          echo "--- Waiting for first scrape ---"
+          sleep 15
+
+          echo "--- Current probe results (1 = up, 0 = down) ---"
+          docker compose -p reportx-monitoring -f monitoring/docker-compose.monitoring.yml \
+            exec -T prometheus wget -q -O- 'http://localhost:9090/api/v1/query?query=probe_success' \
+            | tr '{' '\\n' | grep -E 'env|value' || true
+
+          echo "Prometheus: http://localhost:9090/alerts"
+          echo "Grafana:    http://localhost:3001 (admin/admin)"
+        '''
+      }
+    }
   }
 
   post {
