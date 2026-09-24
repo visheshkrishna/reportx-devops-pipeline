@@ -8,6 +8,7 @@ pipeline {
   }
 
   environment {
+    DOCKER_BUILDKIT = "1"
     IMAGE_TAG    = "${env.BUILD_NUMBER}"
     BACKEND_IMG  = "reportx-backend"
     FRONTEND_IMG = "reportx-frontend"
