@@ -159,7 +159,7 @@ pipeline {
         sh '''
           set -e
           echo "--- Starting monitoring stack (Prometheus :9090, Grafana :3001) ---"
-          docker compose -p reportx-monitoring -f monitoring/docker-compose.monitoring.yml up -d
+          docker compose -p reportx-monitoring -f monitoring/docker-compose.monitoring.yml up -d --build
 
           echo "--- Waiting for Prometheus ---"
           for i in $(seq 1 60); do

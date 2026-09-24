@@ -1,0 +1,2 @@
+FROM prom/blackbox-exporter:v0.25.0
+COPY blackbox.yml /config/blackbox.yml
