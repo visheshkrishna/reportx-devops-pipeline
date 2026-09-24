@@ -6,3 +6,8 @@ modules:
       valid_status_codes: [200]
       method: GET
       preferred_ip_protocol: ip4
+      # The backend enforces TrustedHostMiddleware via ALLOWED_HOSTS, which
+      # rejects the probe's default Host (host.docker.internal) with a 400.
+      # Send the Host header the application accepts.
+      headers:
+        Host: localhost
