@@ -39,8 +39,7 @@ def test_share_creation_emits_patient_and_clinician_notifications(consent_api) -
     )
     assert patient_notifications.status_code == 200, patient_notifications.text
     assert any(
-        item["type"] == "report_shared_confirmed"
-        for item in patient_notifications.json()["items"]
+        item["type"] == "report_shared_confirmed" for item in patient_notifications.json()["items"]
     )
 
     clinician_token = login(consent_api, email=clinician.email)
@@ -50,8 +49,7 @@ def test_share_creation_emits_patient_and_clinician_notifications(consent_api) -
     )
     assert clinician_notifications.status_code == 200, clinician_notifications.text
     assert any(
-        item["type"] == "new_report_shared"
-        for item in clinician_notifications.json()["items"]
+        item["type"] == "new_report_shared" for item in clinician_notifications.json()["items"]
     )
 
 
@@ -131,8 +129,7 @@ def test_report_access_emits_view_notification(consent_api) -> None:
     )
     assert patient_notifications.status_code == 200, patient_notifications.text
     assert any(
-        item["type"] == "clinician_viewed_report"
-        for item in patient_notifications.json()["items"]
+        item["type"] == "clinician_viewed_report" for item in patient_notifications.json()["items"]
     )
 
 
@@ -174,10 +171,7 @@ def test_cleanup_emits_expiry_notifications(consent_api) -> None:
         headers=auth_headers(clinician_token),
     )
     assert notifications.status_code == 200, notifications.text
-    assert any(
-        item["type"] == "share_expired"
-        for item in notifications.json()["items"]
-    )
+    assert any(item["type"] == "share_expired" for item in notifications.json()["items"])
 
 
 async def _run_cleanup(consent_api) -> None:

@@ -42,6 +42,7 @@ async def translate_endpoint(payload: TranslateRequest) -> Any:
 
     label = SUPPORTED_LANGUAGES[code]
     if payload.prefetch_all:
+
         async def _translate(code_item: str, label_item: str):
             translation_item, meta_item = await llm_service.translate_summary(
                 text,
@@ -111,7 +112,10 @@ async def translate_endpoint(payload: TranslateRequest) -> Any:
             if error_code in {"missing_api_key", "missing_openai_dependency"}:
                 return JSONResponse(
                     status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                    content={"detail": "Translation service unavailable", "meta": safe_requested_meta},
+                    content={
+                        "detail": "Translation service unavailable",
+                        "meta": safe_requested_meta,
+                    },
                 )
             return JSONResponse(
                 status_code=status.HTTP_502_BAD_GATEWAY,
@@ -184,4 +188,3 @@ async def translate_endpoint(payload: TranslateRequest) -> Any:
         "translation": translation,
         "meta": safe_meta,
     }
-

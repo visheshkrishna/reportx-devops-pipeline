@@ -19,9 +19,7 @@ depends_on = None
 
 def upgrade() -> None:
     with op.batch_alter_table("conversation_threads") as batch_op:
-        batch_op.add_column(
-            sa.Column("finding_id", sa.String(length=36), nullable=True)
-        )
+        batch_op.add_column(sa.Column("finding_id", sa.String(length=36), nullable=True))
         batch_op.create_foreign_key(
             "fk_conversation_threads_finding_id_report_findings",
             "report_findings",

@@ -231,7 +231,9 @@ def test_non_owner_access_to_audit_log_is_denied(consent_api: ConsentApiHarness)
     assert forbidden.status_code == 403
 
 
-def test_audit_log_action_filter_returns_only_requested_action(consent_api: ConsentApiHarness) -> None:
+def test_audit_log_action_filter_returns_only_requested_action(
+    consent_api: ConsentApiHarness,
+) -> None:
     patient_email = "patient-filter@example.com"
     clinician_email = "clinician-filter@example.com"
 
@@ -314,14 +316,14 @@ def test_audit_log_excludes_events_from_other_reports(consent_api: ConsentApiHar
     assert any(row["context"].get("report_id") == report_a.id for row in created_rows)
 
     unrelated_events = [
-        row
-        for row in created_rows
-        if row["context"].get("report_id") != report_a.id
+        row for row in created_rows if row["context"].get("report_id") != report_a.id
     ]
     assert unrelated_events == []
 
 
-def test_patient_scope_view_events_do_not_leak_across_reports(consent_api: ConsentApiHarness) -> None:
+def test_patient_scope_view_events_do_not_leak_across_reports(
+    consent_api: ConsentApiHarness,
+) -> None:
     patient_email = "patient-view-leak@example.com"
     clinician_email = "clinician-view-leak@example.com"
 

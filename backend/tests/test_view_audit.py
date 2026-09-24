@@ -59,7 +59,9 @@ def test_non_owner_report_access_creates_view_audit_event(consent_api: ConsentAp
     assert event.subject_user_id == clinician.id
 
 
-def test_owner_report_access_does_not_create_view_audit_event(consent_api: ConsentApiHarness) -> None:
+def test_owner_report_access_does_not_create_view_audit_event(
+    consent_api: ConsentApiHarness,
+) -> None:
     with consent_api.session_factory() as session:
         patient = seed_user(session, email="patient-owner-view@example.com", role="patient")
         report = seed_report(session, subject_email=patient.email, created_by_email=patient.email)

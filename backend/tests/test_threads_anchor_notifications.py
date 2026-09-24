@@ -40,6 +40,7 @@ def _seed_finding(
         assert patient is not None
         report = session.get_one = None  # noqa: F841 — dummy to keep lint quiet if used
         from app.db.models import Report as _Report  # local import to avoid cycles above
+
         report_obj = session.scalar(select(_Report).where(_Report.id == report_id))
         assert report_obj is not None
         finding = factory.create_finding(
@@ -195,9 +196,7 @@ def test_thread_creation_notifies_authorized_clinician(consent_api: ConsentApiHa
 
     # Verify row was really written against the patient.
     with consent_api.session_factory() as session:
-        rows = session.scalars(
-            select(Notification).where(Notification.user_id == patient_id)
-        ).all()
+        rows = session.scalars(select(Notification).where(Notification.user_id == patient_id)).all()
         assert len(rows) >= 1
 
 
@@ -214,9 +213,7 @@ def test_message_endpoint_rejects_non_participants(consent_api: ConsentApiHarnes
         )
 
     patient_token = login(consent_api, email=patient_email)
-    thread_resp = _create_thread(
-        consent_api, report_id=report.id, token=patient_token
-    )
+    thread_resp = _create_thread(consent_api, report_id=report.id, token=patient_token)
     assert thread_resp.status_code == 201, thread_resp.text
     thread_id = thread_resp.json()["id"]
 
@@ -291,9 +288,7 @@ def test_mark_notification_as_read(consent_api: ConsentApiHarness) -> None:
         },
     )
 
-    thread_resp = _create_thread(
-        consent_api, report_id=report.id, token=patient_token
-    )
+    thread_resp = _create_thread(consent_api, report_id=report.id, token=patient_token)
     thread_id = thread_resp.json()["id"]
 
     clinician_token = login(consent_api, email=clinician_email)

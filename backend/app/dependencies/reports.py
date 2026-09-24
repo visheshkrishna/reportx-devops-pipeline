@@ -20,9 +20,7 @@ async def get_accessible_report(
     session: AsyncSession = Depends(get_db_session),
 ) -> Report:
     report = await session.scalar(
-        select(Report)
-        .options(selectinload(Report.findings))
-        .where(Report.id == report_id)
+        select(Report).options(selectinload(Report.findings)).where(Report.id == report_id)
     )
     if report is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Report not found")
@@ -31,7 +29,7 @@ async def get_accessible_report(
         return report
 
     now = datetime.now(UTC)
-    
+
     # Check for active, non-revoked, non-expired shares
     share = await session.scalar(
         select(ConsentShare)
@@ -53,7 +51,7 @@ async def get_accessible_report(
         )
         .limit(1)
     )
-    
+
     if share is not None:
         audit = AuditEvent(
             actor_user_id=auth.user.id,
@@ -81,7 +79,7 @@ async def get_accessible_report(
         )
         await session.commit()
         return report
-    
+
     # Check for revoked shares
     revoked_share = await session.scalar(
         select(ConsentShare)
@@ -104,7 +102,7 @@ async def get_accessible_report(
     )
     if revoked_share is not None:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access has been revoked")
-    
+
     # Check for expired shares
     expired_share = await session.scalar(
         select(ConsentShare)
@@ -126,7 +124,7 @@ async def get_accessible_report(
         )
         .limit(1)
     )
-    
+
     if expired_share is not None:
         # Create SHARE_EXPIRED audit event (first time expired share is accessed)
         # Check if we already logged this expiry
@@ -137,7 +135,7 @@ async def get_accessible_report(
                 AuditEvent.resource_id == expired_share.id,
             )
         )
-        
+
         if existing_expiry_event is None:
             # Create audit event for expiry
             audit = AuditEvent(
@@ -168,8 +166,8 @@ async def get_accessible_report(
             payload={"share_id": expired_share.id, "subject_user_id": report.subject_user_id},
         )
         await session.commit()
-        
+
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Share has expired")
-    
+
     # No valid share found
     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")

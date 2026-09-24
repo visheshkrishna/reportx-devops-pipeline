@@ -85,7 +85,9 @@ def _distance_to_reference(value: float, low: float | None, high: float | None) 
     return value - high
 
 
-def _pick_best_finding(findings: list[tuple[ReportFinding, Report]]) -> tuple[ReportFinding, Report]:
+def _pick_best_finding(
+    findings: list[tuple[ReportFinding, Report]],
+) -> tuple[ReportFinding, Report]:
     """From multiple findings for the same (report, biomarker), pick the most clinically relevant one.
 
     Priority: highest flag severity → largest distance from reference range → latest position.
@@ -95,7 +97,9 @@ def _pick_best_finding(findings: list[tuple[ReportFinding, Report]]) -> tuple[Re
         finding, _ = item
         severity = _flag_severity(finding.flag)
         numeric_value = float(finding.value_numeric) if finding.value_numeric is not None else 0.0
-        distance = _distance_to_reference(numeric_value, finding.reference_low, finding.reference_high)
+        distance = _distance_to_reference(
+            numeric_value, finding.reference_low, finding.reference_high
+        )
         return (severity, distance or 0.0, finding.position)
 
     return max(findings, key=sort_key)
@@ -115,8 +119,12 @@ def _classify_direction(previous: TrendPoint, current: TrendPoint) -> str:
     if relative_delta <= 0.03:
         return "stable"
 
-    previous_distance = _distance_to_reference(previous.value, previous.reference_low, previous.reference_high)
-    current_distance = _distance_to_reference(current.value, current.reference_low, current.reference_high)
+    previous_distance = _distance_to_reference(
+        previous.value, previous.reference_low, previous.reference_high
+    )
+    current_distance = _distance_to_reference(
+        current.value, current.reference_low, current.reference_high
+    )
     if previous_distance is not None and current_distance is not None:
         if current_distance + 1e-9 < previous_distance:
             return "improving"
@@ -173,9 +181,7 @@ async def build_trends_for_patient(
         for finding, report in entries:
             by_report.setdefault(report.id, []).append((finding, report))
         deduped = [_pick_best_finding(items) for items in by_report.values()]
-        deduped.sort(
-            key=lambda item: (item[1].observed_at, item[1].created_at, item[0].position)
-        )
+        deduped.sort(key=lambda item: (item[1].observed_at, item[1].created_at, item[0].position))
 
         if len(deduped) < 2:
             continue

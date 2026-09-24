@@ -303,7 +303,9 @@ def test_patient_scope_share_lists_all_patient_reports(consent_api: ConsentApiHa
     assert ids == {report_a.id, report_b.id}
 
 
-def test_overlap_patient_and_report_scope_is_deduped_by_report(consent_api: ConsentApiHarness) -> None:
+def test_overlap_patient_and_report_scope_is_deduped_by_report(
+    consent_api: ConsentApiHarness,
+) -> None:
     patient_email = "patient-overlap@example.com"
     clinician_email = "clinician-overlap@example.com"
 

@@ -298,7 +298,9 @@ def _fallback_interpretation(rows: list[ParsedRowIn]) -> InterpretationOut:
         summary = "The results shown here are within the expected range."
 
     per_test: list[PerTestItem] = []
-    for idx, r in enumerate(flagged_rows[:10], start=1):  # only flagged tests; concise and ordered by severity
+    for idx, r in enumerate(
+        flagged_rows[:10], start=1
+    ):  # only flagged tests; concise and ordered by severity
         val = r.value
         unit = f" {r.unit}" if r.unit else ""
         rr = f" (ref: {r.reference_range})" if r.reference_range else ""
@@ -669,7 +671,9 @@ async def translate_summary(
     )
 
     try:
-        use_responses = meta["model"].startswith("gpt-5") or os.getenv("OPENAI_USE_RESPONSES", "0") in {
+        use_responses = meta["model"].startswith("gpt-5") or os.getenv(
+            "OPENAI_USE_RESPONSES", "0"
+        ) in {
             "1",
             "true",
             "True",
@@ -682,7 +686,9 @@ async def translate_summary(
         call: dict[str, Any]
         if use_responses:
             try:
-                raw, call = await _call_openai_responses(prompt, timeout_s=_timeout_seconds("responses"))
+                raw, call = await _call_openai_responses(
+                    prompt, timeout_s=_timeout_seconds("responses")
+                )
             except Exception:
                 meta["endpoint"] = "chat.completions"
                 raw, call = await _call_openai_chat(prompt, timeout_s=_timeout_seconds("chat"))
@@ -698,15 +704,17 @@ async def translate_summary(
                 meta["finish_reason"] = call["finish_reason"]
             if "status" in call:
                 meta["status"] = call["status"]
-        logger.info({
-            "event": "llm_call",
-            "endpoint": meta.get("endpoint"),
-            "model": meta.get("model"),
-            "ok": True,
-            "attempts": meta.get("attempts"),
-            "usage": meta.get("usage", {}),
-            "language": meta.get("language"),
-        })
+        logger.info(
+            {
+                "event": "llm_call",
+                "endpoint": meta.get("endpoint"),
+                "model": meta.get("model"),
+                "ok": True,
+                "attempts": meta.get("attempts"),
+                "usage": meta.get("usage", {}),
+                "language": meta.get("language"),
+            }
+        )
         return out, meta
 
     except httpx.HTTPStatusError as e:
@@ -753,7 +761,9 @@ async def translate_summary(
 
     except Exception as e:
         meta["ok"] = False
-        status = getattr(e, "status_code", None) or getattr(getattr(e, "response", None), "status_code", None)
+        status = getattr(e, "status_code", None) or getattr(
+            getattr(e, "response", None), "status_code", None
+        )
         code = getattr(e, "code", None) or type(e).__name__
         message = getattr(e, "message", None)
         if not message:
@@ -778,15 +788,17 @@ async def translate_summary(
 
     finally:
         meta["duration_ms"] = int((time.perf_counter() - start) * 1000)
-        logger.info({
-            "event": "llm_call",
-            "endpoint": meta.get("endpoint"),
-            "model": meta.get("model"),
-            "ok": meta.get("ok", False),
-            "attempts": meta.get("attempts"),
-            "usage": meta.get("usage", {}),
-            "language": meta.get("language"),
-            "error": meta.get("error"),
-        })
+        logger.info(
+            {
+                "event": "llm_call",
+                "endpoint": meta.get("endpoint"),
+                "model": meta.get("model"),
+                "ok": meta.get("ok", False),
+                "attempts": meta.get("attempts"),
+                "usage": meta.get("usage", {}),
+                "language": meta.get("language"),
+                "error": meta.get("error"),
+            }
+        )
 
     return None, meta

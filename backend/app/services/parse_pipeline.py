@@ -54,7 +54,9 @@ def _is_pdf_upload(upload: UploadLike) -> bool:
 
 def _is_supported_image_upload(upload: UploadLike) -> bool:
     content_type = (upload.content_type or "application/octet-stream").lower()
-    if content_type.startswith("image/") and any(token in content_type for token in ("png", "jpeg", "jpg")):
+    if content_type.startswith("image/") and any(
+        token in content_type for token in ("png", "jpeg", "jpg")
+    ):
         return True
     filename = (upload.filename or "").lower()
     return filename.endswith((".png", ".jpg", ".jpeg"))
@@ -105,7 +107,9 @@ async def extract_text_from_uploads(
 
         try:
             if is_pdf:
-                text = extract_text_from_pdf_bytes(data, max_pages=active_config.max_pdf_pages, ocr_lang="eng")
+                text = extract_text_from_pdf_bytes(
+                    data, max_pages=active_config.max_pdf_pages, ocr_lang="eng"
+                )
             else:
                 text = extract_text_from_image_bytes(data, lang="eng")
         except Exception as exc:

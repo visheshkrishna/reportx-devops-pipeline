@@ -31,10 +31,10 @@ from .services.reports import cleanup_expired_shares
 async def _run_alembic_migrations(project_root: str, timeout: int) -> None:
     process = await asyncio.create_subprocess_exec(
         sys.executable,
-        '-m',
-        'alembic',
-        'upgrade',
-        'head',
+        "-m",
+        "alembic",
+        "upgrade",
+        "head",
         cwd=project_root,
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
@@ -45,11 +45,11 @@ async def _run_alembic_migrations(project_root: str, timeout: int) -> None:
     except TimeoutError as exc:
         process.kill()
         await process.wait()
-        raise RuntimeError(f'Alembic migration timed out after {timeout} seconds') from exc
+        raise RuntimeError(f"Alembic migration timed out after {timeout} seconds") from exc
 
     if process.returncode != 0:
         error_msg = stderr.decode().strip() or stdout.decode().strip()
-        raise RuntimeError(f'Alembic migration failed: {error_msg}')
+        raise RuntimeError(f"Alembic migration failed: {error_msg}")
 
 
 @asynccontextmanager
@@ -57,17 +57,17 @@ async def app_lifespan(app: FastAPI):
     # Ensure migrations are applied on startup so required tables (e.g. roles) exist.
     project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     try:
-        logging.info('Running alembic migrations at startup...')
-        timeout = int(os.getenv('ALEMBIC_STARTUP_TIMEOUT_SECONDS', '60'))
+        logging.info("Running alembic migrations at startup...")
+        timeout = int(os.getenv("ALEMBIC_STARTUP_TIMEOUT_SECONDS", "60"))
         await _run_alembic_migrations(project_root, timeout=timeout)
-        logging.info('Alembic migrations applied successfully.')
+        logging.info("Alembic migrations applied successfully.")
     except Exception:
-        logging.exception('Failed to apply migrations on startup')
+        logging.exception("Failed to apply migrations on startup")
         raise
 
     # Start background scheduler for cleanup jobs
     scheduler = AsyncIOScheduler()
-    
+
     async def scheduled_cleanup():
         """Wrapper to execute cleanup with a database session."""
         async with app.state.database.session_factory() as session:
@@ -81,27 +81,27 @@ async def app_lifespan(app: FastAPI):
             count = await emit_share_expiry_warnings(session)
             if count > 0:
                 logging.info(f"Emitted {count} share expiry warnings")
-    
+
     # CLEANUP_INTERVAL_MINUTES controls how often expired shared reports are deleted.
     # Default: 5 minutes.
     # Valid values: positive whole-number minutes; lower values increase scheduler and
     # database activity, while higher values leave expired shares in place longer.
     # For production, choose an interval that balances prompt cleanup with operational load.
-    cleanup_interval = int(os.getenv('CLEANUP_INTERVAL_MINUTES', '5'))
-    warning_interval = int(os.getenv('SHARE_WARNING_INTERVAL_MINUTES', str(cleanup_interval)))
+    cleanup_interval = int(os.getenv("CLEANUP_INTERVAL_MINUTES", "5"))
+    warning_interval = int(os.getenv("SHARE_WARNING_INTERVAL_MINUTES", str(cleanup_interval)))
     scheduler.add_job(
         scheduled_cleanup,
-        'interval',
+        "interval",
         minutes=cleanup_interval,
-        id='cleanup-expired-shares',
-        name='Cleanup expired shares',
+        id="cleanup-expired-shares",
+        name="Cleanup expired shares",
     )
     scheduler.add_job(
         scheduled_share_warning_scan,
-        'interval',
+        "interval",
         minutes=warning_interval,
-        id='share-expiry-warning-scan',
-        name='Emit share expiry warnings',
+        id="share-expiry-warning-scan",
+        name="Emit share expiry warnings",
     )
     scheduler.start()
     app.state.scheduler = scheduler

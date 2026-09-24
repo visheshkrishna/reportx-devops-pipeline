@@ -15,6 +15,7 @@ router = APIRouter(prefix="/audit", tags=["audit"])
 
 class AuditEventOut(BaseModel):
     """Audit event output"""
+
     event_id: str
     action: str
     occurred_at: datetime
@@ -33,7 +34,8 @@ async def get_report_audit_log_endpoint(
     Filters:
         action: Comma-separated list of actions (created, revoked, expired)
     """
-    from fastapi import HTTPException, status as http_status  # local to avoid circular
+    from fastapi import status as http_status  # local to avoid circular
+
     if "clinician" in auth.roles and "patient" not in auth.roles:
         raise HTTPException(
             status_code=http_status.HTTP_403_FORBIDDEN,
@@ -43,7 +45,7 @@ async def get_report_audit_log_endpoint(
         actions = None
         if action:
             actions = [a.strip() for a in action.split(",") if a.strip()]
-        
+
         entries = await get_report_audit_log(
             session,
             report_id=report_id,
@@ -52,7 +54,7 @@ async def get_report_audit_log_endpoint(
         )
     except ReportServiceError as exc:
         raise HTTPException(status_code=exc.status_code, detail=exc.detail)
-    
+
     return [
         AuditEventOut(
             event_id=entry.event_id,

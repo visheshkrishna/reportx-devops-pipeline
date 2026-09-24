@@ -78,7 +78,9 @@ def _parse_occurred_at(value: str) -> datetime:
     return parsed
 
 
-def test_share_creation_emits_created_audit_with_required_context(consent_api: ConsentApiHarness) -> None:
+def test_share_creation_emits_created_audit_with_required_context(
+    consent_api: ConsentApiHarness,
+) -> None:
     patient_email = "patient-audit-created@example.com"
     clinician_email = "clinician-audit-created@example.com"
 
@@ -117,7 +119,9 @@ def test_share_creation_emits_created_audit_with_required_context(consent_api: C
     assert "expires_at" in context
 
 
-def test_patient_scope_share_audit_context_marks_scope_patient(consent_api: ConsentApiHarness) -> None:
+def test_patient_scope_share_audit_context_marks_scope_patient(
+    consent_api: ConsentApiHarness,
+) -> None:
     patient_email = "patient-audit-patient-scope@example.com"
     clinician_email = "clinician-audit-patient-scope@example.com"
 

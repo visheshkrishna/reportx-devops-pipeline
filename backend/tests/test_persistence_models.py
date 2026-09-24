@@ -55,7 +55,9 @@ def test_factory_builds_privacy_first_patient_graph(
         report=report,
         participants=[patient, clinician],
     )
-    message = factory.create_message(thread=thread, author=clinician, body="Please repeat CBC in 3 months.")
+    message = factory.create_message(
+        thread=thread, author=clinician, body="Please repeat CBC in 3 months."
+    )
     notification = factory.create_notification(user=patient, thread=thread, report=report)
     template = factory.create_clinician_template(author=clinician)
     audit_event = factory.create_audit_event(

@@ -195,7 +195,9 @@ def test_patient_trends_return_series_and_skip_singletons(trends_api: TrendsApiH
         include_singleton_biomarker=True,
     )
 
-    patient_login = login_user(trends_api, email="patient.trends@example.com", password="Password123!")
+    patient_login = login_user(
+        trends_api, email="patient.trends@example.com", password="Password123!"
+    )
     share_response = trends_api.client.post(
         f"/api/v1/reports/{newer_report_id}/share",
         headers=auth_headers(patient_login["access_token"]),
@@ -209,7 +211,9 @@ def test_patient_trends_return_series_and_skip_singletons(trends_api: TrendsApiH
     )
     assert share_response.status_code == 201, share_response.text
 
-    clinician_login = login_user(trends_api, email="clinician.trends@example.com", password="Password123!")
+    clinician_login = login_user(
+        trends_api, email="clinician.trends@example.com", password="Password123!"
+    )
     response = trends_api.client.get(
         f"/api/v1/reports/{newer_report_id}/trends",
         headers=auth_headers(clinician_login["access_token"]),
@@ -256,7 +260,9 @@ def test_single_report_returns_empty_trends(trends_api: TrendsApiHarness):
         hemoglobin_flag="normal",
     )
 
-    patient_login = login_user(trends_api, email="patient.single@example.com", password="Password123!")
+    patient_login = login_user(
+        trends_api, email="patient.single@example.com", password="Password123!"
+    )
     share_response = trends_api.client.post(
         f"/api/v1/reports/{report_id}/share",
         headers=auth_headers(patient_login["access_token"]),
@@ -270,7 +276,9 @@ def test_single_report_returns_empty_trends(trends_api: TrendsApiHarness):
     )
     assert share_response.status_code == 201, share_response.text
 
-    clinician_login = login_user(trends_api, email="clinician.single@example.com", password="Password123!")
+    clinician_login = login_user(
+        trends_api, email="clinician.single@example.com", password="Password123!"
+    )
     response = trends_api.client.get(
         f"/api/v1/reports/{report_id}/trends",
         headers=auth_headers(clinician_login["access_token"]),
@@ -315,7 +323,9 @@ def test_trends_exclude_date_like_numeric_findings(trends_api: TrendsApiHarness)
         include_report_date_numeric_finding=True,
     )
 
-    patient_login = login_user(trends_api, email="patient.numericfilter@example.com", password="Password123!")
+    patient_login = login_user(
+        trends_api, email="patient.numericfilter@example.com", password="Password123!"
+    )
     share_response = trends_api.client.post(
         f"/api/v1/reports/{newer_report_id}/share",
         headers=auth_headers(patient_login["access_token"]),
@@ -329,7 +339,9 @@ def test_trends_exclude_date_like_numeric_findings(trends_api: TrendsApiHarness)
     )
     assert share_response.status_code == 201, share_response.text
 
-    clinician_login = login_user(trends_api, email="clinician.numericfilter@example.com", password="Password123!")
+    clinician_login = login_user(
+        trends_api, email="clinician.numericfilter@example.com", password="Password123!"
+    )
     response = trends_api.client.get(
         f"/api/v1/reports/{newer_report_id}/trends",
         headers=auth_headers(clinician_login["access_token"]),
@@ -376,7 +388,9 @@ def test_trends_skip_mixed_unit_series(trends_api: TrendsApiHarness):
         hemoglobin_unit="mmol/L",
     )
 
-    patient_login = login_user(trends_api, email="patient.mixedunits@example.com", password="Password123!")
+    patient_login = login_user(
+        trends_api, email="patient.mixedunits@example.com", password="Password123!"
+    )
     share_response = trends_api.client.post(
         f"/api/v1/reports/{newer_report_id}/share",
         headers=auth_headers(patient_login["access_token"]),
@@ -390,7 +404,9 @@ def test_trends_skip_mixed_unit_series(trends_api: TrendsApiHarness):
     )
     assert share_response.status_code == 201, share_response.text
 
-    clinician_login = login_user(trends_api, email="clinician.mixedunits@example.com", password="Password123!")
+    clinician_login = login_user(
+        trends_api, email="clinician.mixedunits@example.com", password="Password123!"
+    )
     response = trends_api.client.get(
         f"/api/v1/reports/{newer_report_id}/trends",
         headers=auth_headers(clinician_login["access_token"]),
@@ -432,7 +448,9 @@ def test_clinician_trends_require_full_report_access(trends_api: TrendsApiHarnes
         hemoglobin_flag="normal",
     )
 
-    patient_login = login_user(trends_api, email="patient.access@example.com", password="Password123!")
+    patient_login = login_user(
+        trends_api, email="patient.access@example.com", password="Password123!"
+    )
     report_scope_share = trends_api.client.post(
         f"/api/v1/reports/{report_id}/share",
         headers=auth_headers(patient_login["access_token"]),
@@ -446,7 +464,9 @@ def test_clinician_trends_require_full_report_access(trends_api: TrendsApiHarnes
     )
     assert report_scope_share.status_code == 201, report_scope_share.text
 
-    clinician_login = login_user(trends_api, email="clinician.access@example.com", password="Password123!")
+    clinician_login = login_user(
+        trends_api, email="clinician.access@example.com", password="Password123!"
+    )
     denied = trends_api.client.get(
         f"/api/v1/reports/{report_id}/trends",
         headers=auth_headers(clinician_login["access_token"]),
@@ -502,13 +522,18 @@ def test_patient_cannot_access_trends_endpoint(trends_api: TrendsApiHarness):
         hemoglobin_flag="normal",
     )
 
-    patient_login = login_user(trends_api, email="patient.notrendsaccess@example.com", password="Password123!")
+    patient_login = login_user(
+        trends_api, email="patient.notrendsaccess@example.com", password="Password123!"
+    )
     response = trends_api.client.get(
         f"/api/v1/reports/{report_id}/trends",
         headers=auth_headers(patient_login["access_token"]),
     )
     assert response.status_code == 403
-    assert "clinician" in response.json()["detail"].lower() or "forbidden" in response.json()["detail"].lower()
+    assert (
+        "clinician" in response.json()["detail"].lower()
+        or "forbidden" in response.json()["detail"].lower()
+    )
 
 
 def test_caregiver_cannot_access_trends_endpoint(trends_api: TrendsApiHarness):
@@ -537,7 +562,9 @@ def test_caregiver_cannot_access_trends_endpoint(trends_api: TrendsApiHarness):
         hemoglobin_flag="high",
     )
 
-    caregiver_login = login_user(trends_api, email="caregiver.notrendsaccess@example.com", password="Password123!")
+    caregiver_login = login_user(
+        trends_api, email="caregiver.notrendsaccess@example.com", password="Password123!"
+    )
     response = trends_api.client.get(
         f"/api/v1/reports/{report_id}/trends",
         headers=auth_headers(caregiver_login["access_token"]),
@@ -579,7 +606,9 @@ def test_clinician_summary_only_scope_denied_trends(trends_api: TrendsApiHarness
         hemoglobin_flag="normal",
     )
 
-    patient_login = login_user(trends_api, email="patient.scopetest@example.com", password="Password123!")
+    patient_login = login_user(
+        trends_api, email="patient.scopetest@example.com", password="Password123!"
+    )
     share_response = trends_api.client.post(
         f"/api/v1/reports/{report_id}/share",
         headers=auth_headers(patient_login["access_token"]),
@@ -593,13 +622,18 @@ def test_clinician_summary_only_scope_denied_trends(trends_api: TrendsApiHarness
     )
     assert share_response.status_code == 201, share_response.text
 
-    clinician_login = login_user(trends_api, email="clinician.scopetest@example.com", password="Password123!")
+    clinician_login = login_user(
+        trends_api, email="clinician.scopetest@example.com", password="Password123!"
+    )
     response = trends_api.client.get(
         f"/api/v1/reports/{report_id}/trends",
         headers=auth_headers(clinician_login["access_token"]),
     )
     assert response.status_code == 403
-    assert "summary_only" in response.json()["detail"].lower() or "scope" in response.json()["detail"].lower()
+    assert (
+        "summary_only" in response.json()["detail"].lower()
+        or "scope" in response.json()["detail"].lower()
+    )
 
 
 def test_clinician_full_report_scope_allowed_trends(trends_api: TrendsApiHarness):
@@ -636,7 +670,9 @@ def test_clinician_full_report_scope_allowed_trends(trends_api: TrendsApiHarness
         hemoglobin_flag="normal",
     )
 
-    patient_login = login_user(trends_api, email="patient.fullscope@example.com", password="Password123!")
+    patient_login = login_user(
+        trends_api, email="patient.fullscope@example.com", password="Password123!"
+    )
     share_response = trends_api.client.post(
         f"/api/v1/reports/{report_id}/share",
         headers=auth_headers(patient_login["access_token"]),
@@ -650,7 +686,9 @@ def test_clinician_full_report_scope_allowed_trends(trends_api: TrendsApiHarness
     )
     assert share_response.status_code == 201, share_response.text
 
-    clinician_login = login_user(trends_api, email="clinician.fullscope@example.com", password="Password123!")
+    clinician_login = login_user(
+        trends_api, email="clinician.fullscope@example.com", password="Password123!"
+    )
     response = trends_api.client.get(
         f"/api/v1/reports/{report_id}/trends",
         headers=auth_headers(clinician_login["access_token"]),
@@ -693,7 +731,9 @@ def test_clinician_full_report_with_threads_scope_allowed_trends(trends_api: Tre
         hemoglobin_flag="normal",
     )
 
-    patient_login = login_user(trends_api, email="patient.threadsscope@example.com", password="Password123!")
+    patient_login = login_user(
+        trends_api, email="patient.threadsscope@example.com", password="Password123!"
+    )
     share_response = trends_api.client.post(
         f"/api/v1/reports/{report_id}/share",
         headers=auth_headers(patient_login["access_token"]),
@@ -707,7 +747,9 @@ def test_clinician_full_report_with_threads_scope_allowed_trends(trends_api: Tre
     )
     assert share_response.status_code == 201, share_response.text
 
-    clinician_login = login_user(trends_api, email="clinician.threadsscope@example.com", password="Password123!")
+    clinician_login = login_user(
+        trends_api, email="clinician.threadsscope@example.com", password="Password123!"
+    )
     response = trends_api.client.get(
         f"/api/v1/reports/{report_id}/trends",
         headers=auth_headers(clinician_login["access_token"]),

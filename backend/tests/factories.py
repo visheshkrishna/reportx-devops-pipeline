@@ -180,7 +180,9 @@ class PersistenceFactory:
         )
         self.session.add(thread)
         self.session.flush()
-        unique_participants = {participant.id: participant for participant in [created_by, *participants]}
+        unique_participants = {
+            participant.id: participant for participant in [created_by, *participants]
+        }
         for participant in unique_participants.values():
             self.session.add(ThreadParticipant(thread=thread, user=participant))
         self.session.flush()

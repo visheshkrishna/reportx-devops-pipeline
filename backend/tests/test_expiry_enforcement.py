@@ -91,7 +91,9 @@ def test_expired_share_denies_access_with_expired_message(consent_api: ConsentAp
     assert "expired" in denied.text.lower()
 
 
-def test_first_expired_access_creates_single_expired_audit_event(consent_api: ConsentApiHarness) -> None:
+def test_first_expired_access_creates_single_expired_audit_event(
+    consent_api: ConsentApiHarness,
+) -> None:
     patient_email = "patient-expiry-audit@example.com"
     clinician_email = "clinician-expiry-audit@example.com"
 

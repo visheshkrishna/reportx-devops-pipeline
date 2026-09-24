@@ -8,7 +8,9 @@ from app.db.models import Report
 from tests.support.consent_api import ConsentApiHarness, auth_headers, login, seed_user
 
 
-def test_create_report_persists_observed_at_and_returns_created_at(consent_api: ConsentApiHarness) -> None:
+def test_create_report_persists_observed_at_and_returns_created_at(
+    consent_api: ConsentApiHarness,
+) -> None:
     email = "patient-create-report@example.com"
 
     with consent_api.session_factory() as session:

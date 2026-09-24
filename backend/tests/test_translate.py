@@ -1,4 +1,3 @@
-
 from fastapi.testclient import TestClient
 
 from app.main import app
@@ -53,4 +52,3 @@ def test_translate_blank_text():
     client = TestClient(app)
     resp = client.post("/api/v1/translate", json={"text": "  \n\t  ", "target_language": "es"})
     assert resp.status_code == 400
-

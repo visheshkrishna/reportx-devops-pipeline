@@ -58,7 +58,9 @@ def test_parse_json_body_returns_expected_contract(stub_structured_extraction):
     assert payload["extracted_text"].startswith("Glucose 92")
 
 
-def test_parse_multiple_uploads_preserves_extracted_text_order(monkeypatch, stub_structured_extraction):
+def test_parse_multiple_uploads_preserves_extracted_text_order(
+    monkeypatch, stub_structured_extraction
+):
     stub_structured_extraction(
         [
             {

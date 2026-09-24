@@ -84,7 +84,9 @@ def _is_excluded_row(test_name: str, result: str, unit: str, reference_range: st
         return True
     if _PERSON_NAME_LIKE.fullmatch(test_name) and _VALUE_NOISE.search(result):
         return True
-    if _MONTH_OR_AGE_UNIT.fullmatch(unit) and (_PERSON_NAME_LIKE.fullmatch(test_name) or not test_name):
+    if _MONTH_OR_AGE_UNIT.fullmatch(unit) and (
+        _PERSON_NAME_LIKE.fullmatch(test_name) or not test_name
+    ):
         return True
     if _REPORT_CODE_LIKE.fullmatch(test_name) and re.fullmatch(r"\d{6}(?:\.0+)?", result):
         return True

@@ -59,8 +59,8 @@ SYSTEM_PROMPT = (
     "Return JSON only with no markdown and no commentary. "
     "Output must be either a JSON array of rows or an object with a top-level 'rows' array. "
     "Each row must strictly match this schema: "
-    "{\"test_name\": string, \"result\": string, \"unit\": string, \"reference_range\": string, "
-    "\"flag\": \"H\" | \"L\" | null}. "
+    '{"test_name": string, "result": string, "unit": string, "reference_range": string, '
+    '"flag": "H" | "L" | null}. '
     "Exclude all non-test metadata, including patient name, DOB, age, sex, Medicare number, "
     "provider number, requesting doctor, specimen type, report ID, lab name, ABN, and any row where "
     "the value is a unit string with no associated test name. "

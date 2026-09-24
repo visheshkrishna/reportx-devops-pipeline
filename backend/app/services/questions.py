@@ -7,7 +7,12 @@ import time
 from typing import Any
 
 from app.db.models import FindingFlag, ReportFinding
-from app.services.llm import _call_openai_chat, _call_openai_responses, _resolve_model, _timeout_seconds
+from app.services.llm import (
+    _call_openai_chat,
+    _call_openai_responses,
+    _resolve_model,
+    _timeout_seconds,
+)
 
 logger = logging.getLogger("reportrx.backend")
 
@@ -73,7 +78,9 @@ async def generate_questions(findings: list[ReportFinding]) -> tuple[list[str], 
     meta["model"] = _resolve_model(os.getenv("OPENAI_MODEL", "gpt-5"))
     meta["endpoint"] = "unknown"
 
-    flagged = [f for f in findings if f.flag in {FindingFlag.HIGH, FindingFlag.LOW, FindingFlag.ABNORMAL}]
+    flagged = [
+        f for f in findings if f.flag in {FindingFlag.HIGH, FindingFlag.LOW, FindingFlag.ABNORMAL}
+    ]
 
     # If no flagged findings, return generic fallback immediately to save LLM cost
     if not flagged:
@@ -84,7 +91,9 @@ async def generate_questions(findings: list[ReportFinding]) -> tuple[list[str], 
     prompt = _build_prompt(flagged[:10])  # limit to 10 flags to fit context
 
     try:
-        use_responses = meta["model"].startswith("gpt-5") or os.getenv("OPENAI_USE_RESPONSES", "0") in {
+        use_responses = meta["model"].startswith("gpt-5") or os.getenv(
+            "OPENAI_USE_RESPONSES", "0"
+        ) in {
             "1",
             "true",
             "True",
@@ -97,7 +106,9 @@ async def generate_questions(findings: list[ReportFinding]) -> tuple[list[str], 
         call: dict[str, Any]
         if use_responses:
             try:
-                raw, call = await _call_openai_responses(prompt, timeout_s=_timeout_seconds("responses"))
+                raw, call = await _call_openai_responses(
+                    prompt, timeout_s=_timeout_seconds("responses")
+                )
             except Exception:
                 meta["endpoint"] = "chat.completions"
                 raw, call = await _call_openai_chat(prompt, timeout_s=_timeout_seconds("chat"))

@@ -120,9 +120,7 @@ async def create_report_for_user(
     await session.commit()
 
     persisted = await session.scalar(
-        select(Report)
-        .where(Report.id == report.id)
-        .options(selectinload(Report.findings))
+        select(Report).where(Report.id == report.id).options(selectinload(Report.findings))
     )
     assert persisted is not None
     return persisted
@@ -138,19 +136,14 @@ def _active_share_statement(*, subject_user_id: str):
 
 async def sync_subject_report_sharing_modes(session: AsyncSession, *, subject_user_id: str) -> None:
     active_shares = (
-        await session.scalars(
-            _active_share_statement(subject_user_id=subject_user_id)
-        )
+        await session.scalars(_active_share_statement(subject_user_id=subject_user_id))
     ).all()
     reports = (
-        await session.scalars(
-            select(Report).where(Report.subject_user_id == subject_user_id)
-        )
+        await session.scalars(select(Report).where(Report.subject_user_id == subject_user_id))
     ).all()
 
     has_patient_scope = any(
-        share.scope == ConsentScope.PATIENT and share.report_id is None
-        for share in active_shares
+        share.scope == ConsentScope.PATIENT and share.report_id is None for share in active_shares
     )
     report_scope_ids = {
         share.report_id
@@ -205,7 +198,7 @@ async def share_report_with_user(
     grantee = await _load_grantee(session, clinician_email=clinician_email)
     if grantee.id == owner_user_id:
         raise ReportServiceError("Cannot share with yourself", 400)
-    
+
     # Verify recipient is a clinician
     clinician_roles = {role.name for role in grantee.roles}
     if "clinician" not in clinician_roles:
@@ -243,7 +236,7 @@ async def share_report_with_user(
         share = existing_share
 
     await session.flush()
-    
+
     # Create audit event for share creation
     await _create_audit_event(
         session,
@@ -281,9 +274,13 @@ async def share_report_with_user(
         resource_type=resource_type,
         resource_id=resource_id,
         report_id=report.id if scope == ConsentScope.REPORT else None,
-        payload={"report_id": report.id, "subject_user_id": report.subject_user_id, "scope": scope.value},
+        payload={
+            "report_id": report.id,
+            "subject_user_id": report.subject_user_id,
+            "scope": scope.value,
+        },
     )
-    
+
     await sync_subject_report_sharing_modes(session, subject_user_id=report.subject_user_id)
     await session.commit()
     await session.refresh(share)
@@ -326,7 +323,7 @@ async def revoke_report_share(
 
     share.revoked_at = datetime.now(UTC)
     await session.flush()
-    
+
     # Create audit event for share revocation
     await _create_audit_event(
         session,
@@ -353,7 +350,11 @@ async def revoke_report_share(
         resource_type=resource_type,
         resource_id=resource_id,
         report_id=report.id if share.scope == ConsentScope.REPORT else None,
-        payload={"report_id": report.id, "grantee_email": grantee.email, "scope": share.scope.value},
+        payload={
+            "report_id": report.id,
+            "grantee_email": grantee.email,
+            "scope": share.scope.value,
+        },
     )
     await emit_notification(
         session,
@@ -363,9 +364,13 @@ async def revoke_report_share(
         resource_type=resource_type,
         resource_id=resource_id,
         report_id=report.id if share.scope == ConsentScope.REPORT else None,
-        payload={"report_id": report.id, "subject_user_id": report.subject_user_id, "scope": share.scope.value},
+        payload={
+            "report_id": report.id,
+            "subject_user_id": report.subject_user_id,
+            "scope": share.scope.value,
+        },
     )
-    
+
     await sync_subject_report_sharing_modes(session, subject_user_id=report.subject_user_id)
     await session.commit()
 
@@ -373,6 +378,7 @@ async def revoke_report_share(
 @dataclass(frozen=True)
 class ClinicianSharedReportItem:
     """Clinician's view of a shared report with patient profile"""
+
     share_id: str
     report_id: str
     report: Report
@@ -456,6 +462,7 @@ async def get_clinician_shared_reports(
 @dataclass(frozen=True)
 class AuditLogEntry:
     """Audit log entry for patient view"""
+
     event_id: str
     action: str
     occurred_at: datetime
@@ -470,13 +477,13 @@ async def get_report_audit_log(
     actions: list[str] | None = None,
 ) -> list[AuditLogEntry]:
     """Get audit log for a report owned by owner_user_id.
-    
+
     Args:
         session: Database session
         report_id: Report ID to audit
         owner_user_id: Verify this user owns the report
         actions: Filter by actions (created, revoked, expired). None = all.
-    
+
     Returns:
         List of audit events in DESC chronological order
     """
@@ -484,10 +491,10 @@ async def get_report_audit_log(
     report = await session.scalar(select(Report).where(Report.id == report_id))
     if report is None:
         raise ReportServiceError("Report not found", 404)
-    
+
     if report.subject_user_id != owner_user_id:
         raise ReportServiceError("Access denied", 403)
-    
+
     share_ids = select(ConsentShare.id).where(
         ConsentShare.subject_user_id == report.subject_user_id,
         or_(
@@ -512,15 +519,13 @@ async def get_report_audit_log(
             context_report_id == report_id,
         ),
     )
-    
+
     if actions:
         query = query.where(AuditEvent.action.in_(actions))
-    
-    result = await session.execute(
-        query.order_by(AuditEvent.occurred_at.desc())
-    )
+
+    result = await session.execute(query.order_by(AuditEvent.occurred_at.desc()))
     events = result.scalars().all()
-    
+
     return [
         AuditLogEntry(
             event_id=event.id,
@@ -535,29 +540,28 @@ async def get_report_audit_log(
 async def cleanup_expired_shares(session: AsyncSession) -> int:
     """
     Background job to mark expired shares as revoked and create audit events.
-    
+
     Finds all active (not revoked) shares where expires_at <= now, marks them revoked,
     and creates a SHARE_EXPIRED audit event for each.
-    
+
     Returns the count of shares cleaned up.
     """
     now = datetime.now(UTC)
-    
+
     # Find all active (not revoked) shares that have expired
     query = select(ConsentShare).where(
-        (ConsentShare.revoked_at.is_(None)) &
-        (ConsentShare.expires_at <= now)
+        (ConsentShare.revoked_at.is_(None)) & (ConsentShare.expires_at <= now)
     )
     result = await session.execute(query)
     expired_shares = result.scalars().all()
-    
+
     cleaned_count = 0
     for share in expired_shares:
         share.revoked_at = now
-        
+
         # Create audit event for the expiry
         grantee = await session.get(User, share.grantee_user_id)
-        
+
         context = {
             "scope": share.scope.value,
             "access_level": share.access_level.value,
@@ -566,7 +570,7 @@ async def cleanup_expired_shares(session: AsyncSession) -> int:
         }
         if share.report_id:
             context["report_id"] = share.report_id
-        
+
         await _create_audit_event(
             session,
             actor_user_id=None,  # System job, no user actor
@@ -587,9 +591,8 @@ async def cleanup_expired_shares(session: AsyncSession) -> int:
             report_id=share.report_id,
             payload={"share_id": share.id, "subject_user_id": share.subject_user_id},
         )
-        
+
         cleaned_count += 1
-    
+
     await session.commit()
     return cleaned_count
-

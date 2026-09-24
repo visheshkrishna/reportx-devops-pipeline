@@ -181,7 +181,11 @@ async def get_clinician_report_scoped(
 
     share = await session.scalar(
         select(ConsentShare)
-        .where(_active_clinician_share(clinician_user_id=clinician_user_id, report_id=report_id, now=now))
+        .where(
+            _active_clinician_share(
+                clinician_user_id=clinician_user_id, report_id=report_id, now=now
+            )
+        )
         .order_by(ConsentShare.created_at.desc())
         .limit(1)
     )
@@ -190,9 +194,7 @@ async def get_clinician_report_scoped(
         raise ValueError("No active share found for this report and clinician")
 
     report = await session.scalar(
-        select(Report)
-        .where(Report.id == report_id)
-        .options(selectinload(Report.findings))
+        select(Report).where(Report.id == report_id).options(selectinload(Report.findings))
     )
     if report is None:
         raise ValueError("Report not found")

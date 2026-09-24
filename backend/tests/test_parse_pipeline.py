@@ -31,7 +31,9 @@ def test_extract_text_from_uploads_rejects_too_many_files():
     ]
 
     with pytest.raises(ParseServiceError) as exc_info:
-        asyncio.run(extract_text_from_uploads(uploads, content_length=None, config=ParseConfig(max_files=5)))
+        asyncio.run(
+            extract_text_from_uploads(uploads, content_length=None, config=ParseConfig(max_files=5))
+        )
 
     assert exc_info.value.status_code == 413
     assert exc_info.value.detail == "Too many files (max 5)."

@@ -18,13 +18,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.session import get_db_session
 from app.dependencies.auth import AuthContext, get_current_auth_context
 from app.services.clinician import (
-    ClinicianDashboardItem,
-    ClinicianReportView,
     get_clinician_patient_summary,
     get_clinician_report_scoped,
     list_clinician_dashboard,
 )
-from app.services.trends import BiomarkerTrend
 
 router = APIRouter(prefix="/clinician", tags=["clinician"])
 
@@ -56,7 +53,7 @@ class ClinicianDashboardItemOut(BaseModel):
 class PatientProfileOut(BaseModel):
     id: str
     display_name: str
-    email: str = ''
+    email: str = ""
     date_of_birth: date | None = None
 
 

@@ -35,9 +35,7 @@ def test_run_openai_extraction_requests_strict_json_schema(monkeypatch):
             captured.update(kwargs)
 
             class FakeResponse:
-                output_text = (
-                    '{"rows":[{"test_name":"Glucose","result":"92","unit":"mg/dL","reference_range":"70-99","flag":null}]}'
-                )
+                output_text = '{"rows":[{"test_name":"Glucose","result":"92","unit":"mg/dL","reference_range":"70-99","flag":null}]}'
 
             return FakeResponse()
 
@@ -64,9 +62,7 @@ def test_run_openai_extraction_omits_temperature_for_gpt5(monkeypatch):
             captured.update(kwargs)
 
             class FakeResponse:
-                output_text = (
-                    '{"rows":[{"test_name":"Glucose","result":"92","unit":"mg/dL","reference_range":"70-99","flag":null}]}'
-                )
+                output_text = '{"rows":[{"test_name":"Glucose","result":"92","unit":"mg/dL","reference_range":"70-99","flag":null}]}'
 
             return FakeResponse()
 

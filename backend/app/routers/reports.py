@@ -180,7 +180,9 @@ class ReportShareResponse(BaseModel):
     expires_at: datetime
 
 
-@router.post("/{report_id}/share", response_model=ReportShareResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/{report_id}/share", response_model=ReportShareResponse, status_code=status.HTTP_201_CREATED
+)
 async def share_report(
     payload: ReportShareRequest,
     report: Report = Depends(get_accessible_report),
@@ -274,6 +276,7 @@ def _report_out(report: Report) -> ReportOut:
 
 class UserOut(BaseModel):
     """User profile output"""
+
     id: str
     email: str
     display_name: str
@@ -282,6 +285,7 @@ class UserOut(BaseModel):
 
 class ClinicianSharedReportOut(BaseModel):
     """Clinician's view of a shared report"""
+
     share_id: str
     report_id: str
     report: ReportOut
@@ -322,7 +326,7 @@ async def list_clinician_shared_reports(
         session,
         clinician_user_id=auth.user.id,
     )
-    
+
     return [
         ClinicianSharedReportOut(
             share_id=item.share_id,
@@ -365,20 +369,16 @@ async def get_clinician_shared_report_detail(
             ConsentShare.grantee_user_id == auth.user.id,
             ConsentShare.revoked_at.is_(None),
             ConsentShare.expires_at > now,
-            (
-                (ConsentShare.scope == ConsentScope.PATIENT)
-                & (ConsentShare.report_id.is_(None))
-            )
-            | (
-                (ConsentShare.scope == ConsentScope.REPORT)
-                & (ConsentShare.report_id == report.id)
-            ),
+            ((ConsentShare.scope == ConsentScope.PATIENT) & (ConsentShare.report_id.is_(None)))
+            | ((ConsentShare.scope == ConsentScope.REPORT) & (ConsentShare.report_id == report.id)),
         )
         .order_by(ConsentShare.created_at.desc())
         .limit(1)
     )
     if share is None:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Shared report access not found")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Shared report access not found"
+        )
 
     patient = await session.get(User, report.subject_user_id)
     if patient is None:
@@ -403,7 +403,9 @@ async def get_clinician_shared_report_detail(
 
 
 @router.get("/{report_id}", response_model=ReportDetailResponse)
-async def get_report_endpoint(report: Report = Depends(get_accessible_report)) -> ReportDetailResponse:
+async def get_report_endpoint(
+    report: Report = Depends(get_accessible_report),
+) -> ReportDetailResponse:
     return ReportDetailResponse(report=_report_out(report))
 
 

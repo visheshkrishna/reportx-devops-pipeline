@@ -1,8 +1,8 @@
 """TDD tests for the T17 gap-fill:
 
-  Gap 1 — Patient DOB in profile (User.date_of_birth, registration, clinician view)
-  Gap 2 — Thread message scope enforcement for clinicians
-           (full_report_with_threads required to post; summary_only / full_report → 403)
+Gap 1 — Patient DOB in profile (User.date_of_birth, registration, clinician view)
+Gap 2 — Thread message scope enforcement for clinicians
+         (full_report_with_threads required to post; summary_only / full_report → 403)
 """
 
 from __future__ import annotations
@@ -18,11 +18,16 @@ from tests.support.consent_api import (
     seed_user,
 )
 
-
 # ── helpers ──────────────────────────────────────────────────────────────────
 
+
 def _register(harness: ConsentApiHarness, *, email: str, role: str, dob: str | None = None) -> dict:
-    body: dict = {"email": email, "password": "Password123!", "role": role, "display_name": "Test User"}
+    body: dict = {
+        "email": email,
+        "password": "Password123!",
+        "role": role,
+        "display_name": "Test User",
+    }
     if dob is not None:
         body["date_of_birth"] = dob
     resp = harness.client.post("/api/v1/auth/register", json=body)
@@ -65,7 +70,9 @@ def _open_thread(harness: ConsentApiHarness, *, report_id: str, token: str) -> s
     return resp.json()["id"]
 
 
-def _post_message(harness: ConsentApiHarness, *, thread_id: str, token: str, body: str = "Reply text") -> int:
+def _post_message(
+    harness: ConsentApiHarness, *, thread_id: str, token: str, body: str = "Reply text"
+) -> int:
     resp = harness.client.post(
         f"/api/v1/threads/{thread_id}/messages",
         json={"body": body},
@@ -75,6 +82,7 @@ def _post_message(harness: ConsentApiHarness, *, thread_id: str, token: str, bod
 
 
 # ── Gap 1: DOB ────────────────────────────────────────────────────────────────
+
 
 def test_register_accepts_date_of_birth(consent_api: ConsentApiHarness) -> None:
     result = _register(
@@ -128,7 +136,9 @@ def test_clinician_report_view_includes_patient_dob(consent_api: ConsentApiHarne
     assert body["patient"]["date_of_birth"] == "1985-03-22"
 
 
-def test_clinician_dashboard_includes_dob_in_patient_profile(consent_api: ConsentApiHarness) -> None:
+def test_clinician_dashboard_includes_dob_in_patient_profile(
+    consent_api: ConsentApiHarness,
+) -> None:
     patient_email = "patient-dob-dash@example.com"
     clinician_email = "clinician-dob-dash@example.com"
 
@@ -159,6 +169,7 @@ def test_clinician_dashboard_includes_dob_in_patient_profile(consent_api: Consen
 
 
 # ── Gap 2: Thread scope enforcement ──────────────────────────────────────────
+
 
 def test_clinician_summary_only_cannot_post_to_thread(consent_api: ConsentApiHarness) -> None:
     patient_email = "patient-thread-sum@example.com"

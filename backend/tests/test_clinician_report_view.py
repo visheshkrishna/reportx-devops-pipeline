@@ -23,8 +23,8 @@ from tests.support.consent_api import (
     seed_user,
 )
 
-
 # ── helpers ──────────────────────────────────────────────────────────────────
+
 
 def _share(
     harness: ConsentApiHarness,
@@ -78,6 +78,7 @@ def _report_view(
 
 # ── dashboard tests ───────────────────────────────────────────────────────────
 
+
 def test_non_clinician_cannot_access_clinician_dashboard(consent_api: ConsentApiHarness) -> None:
     with consent_api.session_factory() as session:
         seed_user(session, email="patient-nodash@example.com", role="patient")
@@ -94,12 +95,21 @@ def test_dashboard_returns_only_active_shares(consent_api: ConsentApiHarness) ->
     with consent_api.session_factory() as session:
         seed_user(session, email="patient-dash-act@example.com", role="patient")
         seed_user(session, email="clinician-dash-act@example.com", role="clinician")
-        report = seed_report(session, subject_email="patient-dash-act@example.com", created_by_email="patient-dash-act@example.com")
+        report = seed_report(
+            session,
+            subject_email="patient-dash-act@example.com",
+            created_by_email="patient-dash-act@example.com",
+        )
 
     patient_token = login(consent_api, email="patient-dash-act@example.com")
     clinician_token = login(consent_api, email="clinician-dash-act@example.com")
 
-    _share(consent_api, report_id=report.id, patient_token=patient_token, clinician_email="clinician-dash-act@example.com")
+    _share(
+        consent_api,
+        report_id=report.id,
+        patient_token=patient_token,
+        clinician_email="clinician-dash-act@example.com",
+    )
 
     items = _dashboard(consent_api, clinician_token=clinician_token)
     assert len(items) == 1
@@ -117,10 +127,19 @@ def test_dashboard_excludes_expired_shares(consent_api: ConsentApiHarness) -> No
     with consent_api.session_factory() as session:
         seed_user(session, email="patient-expired-dash@example.com", role="patient")
         seed_user(session, email="clinician-expired-dash@example.com", role="clinician")
-        report = seed_report(session, subject_email="patient-expired-dash@example.com", created_by_email="patient-expired-dash@example.com")
+        report = seed_report(
+            session,
+            subject_email="patient-expired-dash@example.com",
+            created_by_email="patient-expired-dash@example.com",
+        )
 
     patient_token = login(consent_api, email="patient-expired-dash@example.com")
-    share_data = _share(consent_api, report_id=report.id, patient_token=patient_token, clinician_email="clinician-expired-dash@example.com")
+    share_data = _share(
+        consent_api,
+        report_id=report.id,
+        patient_token=patient_token,
+        clinician_email="clinician-expired-dash@example.com",
+    )
 
     with consent_api.session_factory() as session:
         row = session.scalar(select(ConsentShare).where(ConsentShare.id == share_data["id"]))
@@ -137,10 +156,19 @@ def test_dashboard_excludes_revoked_shares(consent_api: ConsentApiHarness) -> No
     with consent_api.session_factory() as session:
         seed_user(session, email="patient-revoked-dash@example.com", role="patient")
         seed_user(session, email="clinician-revoked-dash@example.com", role="clinician")
-        report = seed_report(session, subject_email="patient-revoked-dash@example.com", created_by_email="patient-revoked-dash@example.com")
+        report = seed_report(
+            session,
+            subject_email="patient-revoked-dash@example.com",
+            created_by_email="patient-revoked-dash@example.com",
+        )
 
     patient_token = login(consent_api, email="patient-revoked-dash@example.com")
-    _share(consent_api, report_id=report.id, patient_token=patient_token, clinician_email="clinician-revoked-dash@example.com")
+    _share(
+        consent_api,
+        report_id=report.id,
+        patient_token=patient_token,
+        clinician_email="clinician-revoked-dash@example.com",
+    )
 
     consent_api.client.post(
         f"/api/v1/reports/{report.id}/share/revoke",
@@ -155,12 +183,26 @@ def test_dashboard_excludes_revoked_shares(consent_api: ConsentApiHarness) -> No
 
 def test_dashboard_item_includes_patient_profile(consent_api: ConsentApiHarness) -> None:
     with consent_api.session_factory() as session:
-        seed_user(session, email="patient-profile-dash@example.com", role="patient", display_name="Alice Patient")
+        seed_user(
+            session,
+            email="patient-profile-dash@example.com",
+            role="patient",
+            display_name="Alice Patient",
+        )
         seed_user(session, email="clinician-profile-dash@example.com", role="clinician")
-        report = seed_report(session, subject_email="patient-profile-dash@example.com", created_by_email="patient-profile-dash@example.com")
+        report = seed_report(
+            session,
+            subject_email="patient-profile-dash@example.com",
+            created_by_email="patient-profile-dash@example.com",
+        )
 
     patient_token = login(consent_api, email="patient-profile-dash@example.com")
-    _share(consent_api, report_id=report.id, patient_token=patient_token, clinician_email="clinician-profile-dash@example.com")
+    _share(
+        consent_api,
+        report_id=report.id,
+        patient_token=patient_token,
+        clinician_email="clinician-profile-dash@example.com",
+    )
 
     clinician_token = login(consent_api, email="clinician-profile-dash@example.com")
     items = _dashboard(consent_api, clinician_token=clinician_token)
@@ -170,11 +212,16 @@ def test_dashboard_item_includes_patient_profile(consent_api: ConsentApiHarness)
 
 # ── scoped report view tests ──────────────────────────────────────────────────
 
+
 def test_unshared_report_returns_403_not_404(consent_api: ConsentApiHarness) -> None:
     with consent_api.session_factory() as session:
         seed_user(session, email="patient-403@example.com", role="patient")
         seed_user(session, email="clinician-403@example.com", role="clinician")
-        report = seed_report(session, subject_email="patient-403@example.com", created_by_email="patient-403@example.com")
+        report = seed_report(
+            session,
+            subject_email="patient-403@example.com",
+            created_by_email="patient-403@example.com",
+        )
 
     clinician_token = login(consent_api, email="clinician-403@example.com")
     resp = consent_api.client.get(
@@ -190,7 +237,11 @@ def test_summary_only_response_has_no_findings_or_trends(consent_api: ConsentApi
     with consent_api.session_factory() as session:
         seed_user(session, email="patient-sumonly@example.com", role="patient")
         seed_user(session, email="clinician-sumonly@example.com", role="clinician")
-        report = seed_report(session, subject_email="patient-sumonly@example.com", created_by_email="patient-sumonly@example.com")
+        report = seed_report(
+            session,
+            subject_email="patient-sumonly@example.com",
+            created_by_email="patient-sumonly@example.com",
+        )
 
     patient_token = login(consent_api, email="patient-sumonly@example.com")
     _share(
@@ -216,7 +267,11 @@ def test_full_report_response_includes_findings_and_trends(consent_api: ConsentA
     with consent_api.session_factory() as session:
         seed_user(session, email="patient-fullrep@example.com", role="patient")
         seed_user(session, email="clinician-fullrep@example.com", role="clinician")
-        report = seed_report(session, subject_email="patient-fullrep@example.com", created_by_email="patient-fullrep@example.com")
+        report = seed_report(
+            session,
+            subject_email="patient-fullrep@example.com",
+            created_by_email="patient-fullrep@example.com",
+        )
 
     patient_token = login(consent_api, email="patient-fullrep@example.com")
     _share(
@@ -241,7 +296,11 @@ def test_full_report_with_threads_includes_thread_list(consent_api: ConsentApiHa
     with consent_api.session_factory() as session:
         seed_user(session, email="patient-threads@example.com", role="patient")
         seed_user(session, email="clinician-threads@example.com", role="clinician")
-        report = seed_report(session, subject_email="patient-threads@example.com", created_by_email="patient-threads@example.com")
+        report = seed_report(
+            session,
+            subject_email="patient-threads@example.com",
+            created_by_email="patient-threads@example.com",
+        )
 
     patient_token = login(consent_api, email="patient-threads@example.com")
     _share(
@@ -266,7 +325,11 @@ def test_doctor_summary_included_when_flag_set(consent_api: ConsentApiHarness) -
     with consent_api.session_factory() as session:
         seed_user(session, email="patient-docsum@example.com", role="patient")
         seed_user(session, email="clinician-docsum@example.com", role="clinician")
-        report = seed_report(session, subject_email="patient-docsum@example.com", created_by_email="patient-docsum@example.com")
+        report = seed_report(
+            session,
+            subject_email="patient-docsum@example.com",
+            created_by_email="patient-docsum@example.com",
+        )
 
     patient_token = login(consent_api, email="patient-docsum@example.com")
     _share(
@@ -289,7 +352,11 @@ def test_doctor_summary_absent_when_flag_false(consent_api: ConsentApiHarness) -
     with consent_api.session_factory() as session:
         seed_user(session, email="patient-nods@example.com", role="patient")
         seed_user(session, email="clinician-nods@example.com", role="clinician")
-        report = seed_report(session, subject_email="patient-nods@example.com", created_by_email="patient-nods@example.com")
+        report = seed_report(
+            session,
+            subject_email="patient-nods@example.com",
+            created_by_email="patient-nods@example.com",
+        )
 
     patient_token = login(consent_api, email="patient-nods@example.com")
     _share(
@@ -310,11 +377,16 @@ def test_doctor_summary_absent_when_flag_false(consent_api: ConsentApiHarness) -
 
 # ── authorization boundary tests ──────────────────────────────────────────────
 
+
 def test_clinician_cannot_access_audit_log(consent_api: ConsentApiHarness) -> None:
     with consent_api.session_factory() as session:
         seed_user(session, email="patient-auditck@example.com", role="patient")
         seed_user(session, email="clinician-auditck@example.com", role="clinician")
-        report = seed_report(session, subject_email="patient-auditck@example.com", created_by_email="patient-auditck@example.com")
+        report = seed_report(
+            session,
+            subject_email="patient-auditck@example.com",
+            created_by_email="patient-auditck@example.com",
+        )
 
     clinician_token = login(consent_api, email="clinician-auditck@example.com")
     resp = consent_api.client.get(
@@ -328,7 +400,11 @@ def test_clinician_cannot_create_share(consent_api: ConsentApiHarness) -> None:
     with consent_api.session_factory() as session:
         seed_user(session, email="patient-shareck@example.com", role="patient")
         seed_user(session, email="clinician-shareck@example.com", role="clinician")
-        report = seed_report(session, subject_email="patient-shareck@example.com", created_by_email="patient-shareck@example.com")
+        report = seed_report(
+            session,
+            subject_email="patient-shareck@example.com",
+            created_by_email="patient-shareck@example.com",
+        )
 
     clinician_token = login(consent_api, email="clinician-shareck@example.com")
     resp = consent_api.client.post(
@@ -348,7 +424,11 @@ def test_clinician_cannot_revoke_share(consent_api: ConsentApiHarness) -> None:
     with consent_api.session_factory() as session:
         seed_user(session, email="patient-revokeck@example.com", role="patient")
         seed_user(session, email="clinician-revokeck@example.com", role="clinician")
-        report = seed_report(session, subject_email="patient-revokeck@example.com", created_by_email="patient-revokeck@example.com")
+        report = seed_report(
+            session,
+            subject_email="patient-revokeck@example.com",
+            created_by_email="patient-revokeck@example.com",
+        )
 
     clinician_token = login(consent_api, email="clinician-revokeck@example.com")
     resp = consent_api.client.post(
@@ -362,7 +442,11 @@ def test_clinician_cannot_revoke_share(consent_api: ConsentApiHarness) -> None:
 def test_non_clinician_cannot_access_scoped_report_view(consent_api: ConsentApiHarness) -> None:
     with consent_api.session_factory() as session:
         seed_user(session, email="patient-scopeck@example.com", role="patient")
-        report = seed_report(session, subject_email="patient-scopeck@example.com", created_by_email="patient-scopeck@example.com")
+        report = seed_report(
+            session,
+            subject_email="patient-scopeck@example.com",
+            created_by_email="patient-scopeck@example.com",
+        )
 
     patient_token = login(consent_api, email="patient-scopeck@example.com")
     resp = consent_api.client.get(
@@ -377,14 +461,26 @@ def test_share_revalidated_on_every_request(consent_api: ConsentApiHarness) -> N
     with consent_api.session_factory() as session:
         seed_user(session, email="patient-revalid@example.com", role="patient")
         seed_user(session, email="clinician-revalid@example.com", role="clinician")
-        report = seed_report(session, subject_email="patient-revalid@example.com", created_by_email="patient-revalid@example.com")
+        report = seed_report(
+            session,
+            subject_email="patient-revalid@example.com",
+            created_by_email="patient-revalid@example.com",
+        )
 
     patient_token = login(consent_api, email="patient-revalid@example.com")
-    _share(consent_api, report_id=report.id, patient_token=patient_token, clinician_email="clinician-revalid@example.com", view_scope="full_report")
+    _share(
+        consent_api,
+        report_id=report.id,
+        patient_token=patient_token,
+        clinician_email="clinician-revalid@example.com",
+        view_scope="full_report",
+    )
 
     clinician_token = login(consent_api, email="clinician-revalid@example.com")
     # First access should succeed
-    _report_view(consent_api, clinician_token=clinician_token, report_id=report.id, expect_status=200)
+    _report_view(
+        consent_api, clinician_token=clinician_token, report_id=report.id, expect_status=200
+    )
 
     # Revoke the share
     consent_api.client.post(
@@ -394,4 +490,6 @@ def test_share_revalidated_on_every_request(consent_api: ConsentApiHarness) -> N
     )
 
     # Subsequent access must be denied
-    _report_view(consent_api, clinician_token=clinician_token, report_id=report.id, expect_status=403)
+    _report_view(
+        consent_api, clinician_token=clinician_token, report_id=report.id, expect_status=403
+    )

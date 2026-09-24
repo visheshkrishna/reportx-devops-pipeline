@@ -33,6 +33,7 @@ async def test_run_alembic_migrations_uses_active_interpreter(
     assert args[0] == sys.executable
     assert args[1:5] == ("-m", "alembic", "upgrade", "head")
 
+
 @pytest.mark.asyncio
 async def test_app_lifespan_defaults_cleanup_interval_to_five_minutes(
     monkeypatch: pytest.MonkeyPatch,

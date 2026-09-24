@@ -23,8 +23,12 @@ def _run_cleanup(consent_api: ConsentApiHarness) -> int:
 def test_cleanup_revokes_only_active_expired_shares(consent_api: ConsentApiHarness) -> None:
     with consent_api.session_factory() as session:
         patient = seed_user(session, email="patient-cleanup-count@example.com", role="patient")
-        clinician = seed_user(session, email="clinician-cleanup-count@example.com", role="clinician")
-        clinician_alt = seed_user(session, email="clinician-cleanup-count-alt@example.com", role="clinician")
+        clinician = seed_user(
+            session, email="clinician-cleanup-count@example.com", role="clinician"
+        )
+        clinician_alt = seed_user(
+            session, email="clinician-cleanup-count-alt@example.com", role="clinician"
+        )
         report = seed_report(
             session,
             subject_email=patient.email,
@@ -70,7 +74,9 @@ def test_cleanup_revokes_only_active_expired_shares(consent_api: ConsentApiHarne
     assert cleaned_count == 1
 
     with consent_api.session_factory() as session:
-        expired_row = session.scalar(select(ConsentShare).where(ConsentShare.id == expired_share_id))
+        expired_row = session.scalar(
+            select(ConsentShare).where(ConsentShare.id == expired_share_id)
+        )
         active_row = session.scalar(select(ConsentShare).where(ConsentShare.id == active_share_id))
         already_revoked_row = session.scalar(
             select(ConsentShare).where(ConsentShare.id == already_revoked_share_id)
@@ -88,7 +94,9 @@ def test_cleanup_revokes_only_active_expired_shares(consent_api: ConsentApiHarne
 def test_cleanup_writes_consent_share_expired_audit_event(consent_api: ConsentApiHarness) -> None:
     with consent_api.session_factory() as session:
         patient = seed_user(session, email="patient-cleanup-audit@example.com", role="patient")
-        clinician = seed_user(session, email="clinician-cleanup-audit@example.com", role="clinician")
+        clinician = seed_user(
+            session, email="clinician-cleanup-audit@example.com", role="clinician"
+        )
         clinician_id = clinician.id
         report = seed_report(
             session,

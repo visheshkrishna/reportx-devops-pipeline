@@ -33,7 +33,9 @@ async def get_current_auth_context(
         raise _auth_http_exception("Not authenticated", status.HTTP_401_UNAUTHORIZED)
 
     try:
-        auth_session = await load_authenticated_session(session, access_token=credentials.credentials)
+        auth_session = await load_authenticated_session(
+            session, access_token=credentials.credentials
+        )
     except AuthError as exc:
         raise _auth_http_exception(exc.detail, exc.status_code) from exc
 

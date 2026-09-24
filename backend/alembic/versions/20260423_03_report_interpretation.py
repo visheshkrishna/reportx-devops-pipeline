@@ -19,9 +19,7 @@ depends_on = None
 
 def upgrade() -> None:
     with op.batch_alter_table("reports") as batch_op:
-        batch_op.add_column(
-            sa.Column("interpretation_json", sa.JSON(), nullable=True)
-        )
+        batch_op.add_column(sa.Column("interpretation_json", sa.JSON(), nullable=True))
 
 
 def downgrade() -> None:

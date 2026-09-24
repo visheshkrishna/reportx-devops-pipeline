@@ -275,7 +275,9 @@ def upgrade() -> None:
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
         sa.Column("id", sa.String(length=36), nullable=False),
         sa.ForeignKeyConstraint(["author_user_id"], ["users.id"], ondelete="CASCADE"),
-        sa.ForeignKeyConstraint(["template_id"], ["clinician_response_templates.id"], ondelete="SET NULL"),
+        sa.ForeignKeyConstraint(
+            ["template_id"], ["clinician_response_templates.id"], ondelete="SET NULL"
+        ),
         sa.ForeignKeyConstraint(["thread_id"], ["conversation_threads.id"], ondelete="CASCADE"),
         sa.PrimaryKeyConstraint("id", name="pk_thread_messages"),
     )
@@ -288,7 +290,9 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(["thread_id"], ["conversation_threads.id"], ondelete="CASCADE"),
         sa.ForeignKeyConstraint(["user_id"], ["users.id"], ondelete="CASCADE"),
         sa.PrimaryKeyConstraint("thread_id", "user_id", name="pk_thread_participants"),
-        sa.UniqueConstraint("thread_id", "user_id", name="uq_thread_participants_thread_id_user_id"),
+        sa.UniqueConstraint(
+            "thread_id", "user_id", name="uq_thread_participants_thread_id_user_id"
+        ),
     )
 
     op.create_table(
@@ -325,8 +329,15 @@ def upgrade() -> None:
 
     op.create_index("ix_auth_sessions_user_id", "auth_sessions", ["user_id"], unique=False)
     op.create_index("ix_reports_subject_user_id", "reports", ["subject_user_id"], unique=False)
-    op.create_index("ix_reports_created_by_user_id", "reports", ["created_by_user_id"], unique=False)
-    op.create_index("ix_report_findings_report_id", "report_findings", ["report_id", "biomarker_key"], unique=False)
+    op.create_index(
+        "ix_reports_created_by_user_id", "reports", ["created_by_user_id"], unique=False
+    )
+    op.create_index(
+        "ix_report_findings_report_id",
+        "report_findings",
+        ["report_id", "biomarker_key"],
+        unique=False,
+    )
     op.create_index(
         "ix_biomarker_observations_patient_user_id",
         "biomarker_observations",
@@ -345,7 +356,9 @@ def upgrade() -> None:
         ["thread_id", "created_at"],
         unique=False,
     )
-    op.create_index("ix_notifications_user_id", "notifications", ["user_id", "read_at"], unique=False)
+    op.create_index(
+        "ix_notifications_user_id", "notifications", ["user_id", "read_at"], unique=False
+    )
     op.create_index(
         "ix_audit_events_resource_id",
         "audit_events",

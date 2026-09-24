@@ -243,7 +243,9 @@ def test_login_success_and_failure(auth_api: AuthApiHarness):
     with auth_api.session_factory() as session:
         user = session.scalar(select(User).where(User.email == "login.user@example.com"))
         assert user is not None
-        auth_session = session.scalars(select(AuthSession).where(AuthSession.user_id == user.id)).first()
+        auth_session = session.scalars(
+            select(AuthSession).where(AuthSession.user_id == user.id)
+        ).first()
         assert auth_session is not None
         assert auth_session.refresh_token_hash != body["refresh_token"]
 
@@ -455,7 +457,9 @@ def test_patient_can_share_report_via_api(auth_api: AuthApiHarness):
         created_by_email="patient.share2@example.com",
     )
 
-    patient_login = login_user(auth_api, email="patient.share2@example.com", password="Password123!")
+    patient_login = login_user(
+        auth_api, email="patient.share2@example.com", password="Password123!"
+    )
     share_response = auth_api.client.post(
         f"/api/v1/reports/{report_id}/share",
         headers=auth_headers(patient_login["access_token"]),
@@ -468,7 +472,9 @@ def test_patient_can_share_report_via_api(auth_api: AuthApiHarness):
     )
     assert share_response.status_code == 201, share_response.text
 
-    clinician_login = login_user(auth_api, email="clinician.user2@example.com", password="Password123!")
+    clinician_login = login_user(
+        auth_api, email="clinician.user2@example.com", password="Password123!"
+    )
     allowed = auth_api.client.get(
         f"/api/v1/reports/{report_id}",
         headers=auth_headers(clinician_login["access_token"]),
@@ -484,7 +490,9 @@ def test_patient_can_create_report_with_ordered_findings_via_api(auth_api: AuthA
         role="patient",
         display_name="Patient Create",
     )
-    patient_login = login_user(auth_api, email="patient.create@example.com", password="Password123!")
+    patient_login = login_user(
+        auth_api, email="patient.create@example.com", password="Password123!"
+    )
 
     create_response = auth_api.client.post(
         "/api/v1/reports",
@@ -551,8 +559,12 @@ def test_revoking_last_share_removes_access_and_resets_sharing_mode(auth_api: Au
         created_by_email="patient.revoke@example.com",
     )
 
-    patient_login = login_user(auth_api, email="patient.revoke@example.com", password="Password123!")
-    clinician_login = login_user(auth_api, email="clinician.revoke@example.com", password="Password123!")
+    patient_login = login_user(
+        auth_api, email="patient.revoke@example.com", password="Password123!"
+    )
+    clinician_login = login_user(
+        auth_api, email="clinician.revoke@example.com", password="Password123!"
+    )
 
     share_response = auth_api.client.post(
         f"/api/v1/reports/{report_id}/share",
@@ -594,7 +606,9 @@ def test_revoking_last_share_removes_access_and_resets_sharing_mode(auth_api: Au
     assert patient_view.json()["report"]["sharing_mode"] == "private"
 
 
-def test_revoking_patient_scoped_share_removes_access_to_all_patient_reports(auth_api: AuthApiHarness):
+def test_revoking_patient_scoped_share_removes_access_to_all_patient_reports(
+    auth_api: AuthApiHarness,
+):
     from datetime import UTC, datetime, timedelta
 
     register_user(
@@ -624,7 +638,9 @@ def test_revoking_patient_scoped_share_removes_access_to_all_patient_reports(aut
     )
 
     patient_login = login_user(auth_api, email="patient.scope@example.com", password="Password123!")
-    clinician_login = login_user(auth_api, email="clinician.scope@example.com", password="Password123!")
+    clinician_login = login_user(
+        auth_api, email="clinician.scope@example.com", password="Password123!"
+    )
 
     share_response = auth_api.client.post(
         f"/api/v1/reports/{report_id}/share",
