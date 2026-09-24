@@ -118,6 +118,41 @@ pipeline {
         '''
       }
     }
+
+        stage('Release') {
+      steps {
+        sh '''
+          set -e
+          echo "--- Promoting build ${IMAGE_TAG} to production (frontend :3100, backend :8100) ---"
+
+          docker tag ${BACKEND_IMG}:${IMAGE_TAG}  ${BACKEND_IMG}:release-${IMAGE_TAG}
+          docker tag ${FRONTEND_IMG}:${IMAGE_TAG} ${FRONTEND_IMG}:release-${IMAGE_TAG}
+
+          export POSTGRES_PORT=5434
+          export BACKEND_PORT=8100
+          export FRONTEND_PORT=3100
+          export NEXT_PUBLIC_BACKEND_URL=http://localhost:8100
+          export FRONTEND_URL=http://localhost:3100
+
+          docker compose -p reportx-prod -f docker-compose.yml -f docker-compose.fullqa.yml down --remove-orphans || true
+          docker compose -p reportx-prod -f docker-compose.yml -f docker-compose.fullqa.yml up -d --build
+
+          echo "--- Verifying production health ---"
+          for i in $(seq 1 60); do
+            if docker compose -p reportx-prod -f docker-compose.yml -f docker-compose.fullqa.yml exec -T backend \
+                 python -c "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8000/api/v1/health').status==200 else 1)" 2>/dev/null; then
+              echo "Production healthy after ${i}s"
+              break
+            fi
+            if [ "$i" = "60" ]; then echo "Production never became healthy — staging remains live"; exit 1; fi
+            sleep 1
+          done
+
+          docker compose -p reportx-prod -f docker-compose.yml -f docker-compose.fullqa.yml ps
+          echo "Released ${IMAGE_TAG} to production: http://localhost:3100"
+        '''
+      }
+    }
   }
 
   post {
