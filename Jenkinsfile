@@ -75,7 +75,7 @@ pipeline {
           docker run --rm \
             -v /var/run/docker.sock:/var/run/docker.sock \
             -v trivy-cache:/root/.cache/ \
-            aquasec/trivy:latest image \
+            aquasec/trivy:latest image --quiet \
             --severity HIGH,CRITICAL --scanners vuln --exit-code 0 \
             ${BACKEND_IMG}:${IMAGE_TAG}
 
@@ -83,12 +83,38 @@ pipeline {
           docker run --rm \
             -v /var/run/docker.sock:/var/run/docker.sock \
             -v trivy-cache:/root/.cache/ \
-            aquasec/trivy:latest image \
+            aquasec/trivy:latest image --quiet \
             --severity HIGH,CRITICAL --scanners vuln --exit-code 0 \
             ${FRONTEND_IMG}:${IMAGE_TAG}
 
           echo "--- npm audit: frontend dependencies ---"
           docker run --rm ${FRONTEND_IMG}-test:${IMAGE_TAG} npm audit --audit-level=high || true
+        '''
+      }
+    }
+
+    stage('Deploy') {
+      steps {
+        sh '''
+          set -e
+          echo "--- Deploying to staging (frontend :3000, backend :8000) ---"
+
+          docker compose -p reportx-staging down --remove-orphans || true
+          docker compose -p reportx-staging up -d --build
+
+          echo "--- Waiting for backend health ---"
+          for i in $(seq 1 60); do
+            if docker compose -p reportx-staging exec -T backend \
+                 python -c "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8000/api/v1/health').status==200 else 1)" 2>/dev/null; then
+              echo "Backend healthy after ${i}s"
+              break
+            fi
+            if [ "$i" = "60" ]; then echo "Backend never became healthy"; exit 1; fi
+            sleep 1
+          done
+
+          docker compose -p reportx-staging ps
+          echo "Staging deployed: http://localhost:3000"
         '''
       }
     }
